@@ -84,7 +84,7 @@ export default function Hero() {
               >
                 View My Work
               </Button>
-              <a href="public\cv\cv.pdf" target="_blank" rel="noopener noreferrer" download>
+              <a href="https://drive.google.com/file/d/1RmDNn8x82ksNrv_3LHbxHATT5an9vdzm/view?usp=drive_link" target="_blank" rel="noopener noreferrer">
                 <Button variant="outline" size="lg">
                   Download CV
                 </Button>
