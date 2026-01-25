@@ -2,18 +2,35 @@
 
 import type React from "react"
 
-import { motion } from "framer-motion"
-import { useInView } from "framer-motion"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import gsap from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { Mail, Phone, MapPin, Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
 
+// Register GSAP plugins
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger)
+}
+
+/**
+ * Enhanced Contact Section with GSAP ScrollTrigger
+ * 
+ * UX Benefits:
+ * - Improved spacing and typography for better readability
+ * - Clear form layout with proper visual hierarchy
+ * - Smooth animations on scroll
+ * - Enhanced hover interactions for contact cards
+ */
 export default function Contact() {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: "-100px" })
+  const sectionRef = useRef<HTMLElement>(null)
+  const headerRef = useRef<HTMLDivElement>(null)
+  const contactInfoRef = useRef<HTMLDivElement>(null)
+  const formRef = useRef<HTMLDivElement>(null)
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -22,9 +39,7 @@ export default function Contact() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission here
     console.log("Form submitted:", formData)
-    // Reset form
     setFormData({ name: "", email: "", message: "" })
   }
 
@@ -56,89 +71,206 @@ export default function Contact() {
     },
   ]
 
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // Header animation
+      if (headerRef.current) {
+        gsap.fromTo(
+          headerRef.current,
+          { opacity: 0, y: 50 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: headerRef.current,
+              start: "top 80%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        )
+      }
+
+      // Contact info cards animation
+      if (contactInfoRef.current) {
+        const infoCards = contactInfoRef.current.querySelectorAll(".contact-info-card")
+        gsap.fromTo(
+          infoCards,
+          {
+            opacity: 0,
+            x: -50,
+          },
+          {
+            opacity: 1,
+            x: 0,
+            duration: 0.6,
+            stagger: 0.15,
+            ease: "power2.out",
+            scrollTrigger: {
+              trigger: contactInfoRef.current,
+              start: "top 80%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        )
+
+        // Hover effects for contact cards
+        infoCards.forEach((card) => {
+          const icon = card.querySelector(".contact-icon")
+          const handleMouseEnter = () => {
+            gsap.to(card, {
+              y: -5,
+              scale: 1.02,
+              boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)",
+              duration: 0.3,
+              ease: "power2.out",
+            })
+            if (icon) {
+              gsap.to(icon, {
+                scale: 1.1,
+                rotate: 5,
+                duration: 0.3,
+                ease: "back.out(1.5)",
+              })
+            }
+          }
+
+          const handleMouseLeave = () => {
+            gsap.to(card, {
+              y: 0,
+              scale: 1,
+              boxShadow: "0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+              duration: 0.3,
+              ease: "power2.out",
+            })
+            if (icon) {
+              gsap.to(icon, {
+                scale: 1,
+                rotate: 0,
+                duration: 0.3,
+                ease: "power2.out",
+              })
+            }
+          }
+
+          card.addEventListener("mouseenter", handleMouseEnter)
+          card.addEventListener("mouseleave", handleMouseLeave)
+
+          return () => {
+            card.removeEventListener("mouseenter", handleMouseEnter)
+            card.removeEventListener("mouseleave", handleMouseLeave)
+          }
+        })
+      }
+
+      // Form animation
+      if (formRef.current) {
+        gsap.fromTo(
+          formRef.current,
+          {
+            opacity: 0,
+            x: 50,
+            scale: 0.95,
+          },
+          {
+            opacity: 1,
+            x: 0,
+            scale: 1,
+            duration: 0.8,
+            ease: "back.out(1.2)",
+            scrollTrigger: {
+              trigger: formRef.current,
+              start: "top 80%",
+              toggleActions: "play none none reverse",
+            },
+          }
+        )
+      }
+    }, sectionRef)
+
+    return () => ctx.revert()
+  }, [])
+
   return (
-    <section id="contact" className="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-800">
+    <section
+      ref={sectionRef}
+      id="contact"
+      className="py-24 px-4 sm:px-6 lg:px-8 relative"
+    >
+      {/* Section separator */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+      
       <div className="max-w-7xl mx-auto">
-        <motion.div
-          ref={ref}
-          initial={{ opacity: 0, y: 50 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">Get In Touch</h2>
-          <div className="w-20 h-1 bg-blue-600 mx-auto mb-6"></div>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+        <div ref={headerRef} className="text-center mb-12 sm:mb-20 px-4">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-foreground mb-4 sm:mb-6">
+            Get In Touch
+          </h2>
+          <div className="w-20 sm:w-24 h-1 bg-gradient-to-r from-primary to-primary/50 mx-auto mb-4 sm:mb-6 rounded-full"></div>
+          <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Have a project in mind? Let's discuss how we can work together to bring your ideas to life.
           </p>
-        </motion.div>
+        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-10">
           {/* Contact Information */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -50 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="space-y-6"
-          >
+          <div ref={contactInfoRef} className="space-y-4 sm:space-y-6">
             <div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Let's Connect</h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+              <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground mb-4 sm:mb-6">
+                Let's Connect
+              </h3>
+              <p className="text-muted-foreground mb-6 sm:mb-8 leading-relaxed text-sm sm:text-base">
                 I'm always interested in hearing about new projects and opportunities. Whether you're a company looking
                 to hire, or you're someone with an idea, I'd love to hear from you.
               </p>
             </div>
 
-            <div className="space-y-4">
-              {contactInfo.map((info, index) => (
-                <motion.div
-                  key={info.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-                  transition={{ duration: 0.5, delay: 0.3 + index * 0.1 }}
-                >
-                  <Card className="bg-white dark:bg-gray-900 shadow-md hover:shadow-lg transition-shadow duration-300">
-                    <CardContent className="p-4">
-                      <a href={info.link} className="flex items-center space-x-4 group">
-                        <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+            <div className="space-y-3 sm:space-y-4">
+              {contactInfo.map((info) => (
+                <div key={info.title} className="contact-info-card">
+                  <Card className="bg-card border border-border/50 shadow-md hover:shadow-lg hover:border-primary/30 transition-all duration-300">
+                    <CardContent className="p-4 sm:p-5">
+                      <a
+                        href={info.link}
+                        className="flex items-center space-x-3 sm:space-x-4 group"
+                        data-cursor-hover
+                      >
+                        <div className="contact-icon w-10 h-10 sm:w-12 sm:h-12 bg-secondary/50 border border-border/30 rounded-lg flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300 flex-shrink-0">
                           {info.icon}
                         </div>
-                        <div>
-                          <h4 className="font-semibold text-gray-900 dark:text-white">{info.title}</h4>
-                          <p className="text-gray-600 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+                        <div className="min-w-0 flex-1">
+                          <h4 className="font-semibold text-foreground text-sm sm:text-base">
+                            {info.title}
+                          </h4>
+                          <p className="text-muted-foreground group-hover:text-primary transition-colors duration-300 text-xs sm:text-sm break-words">
                             {info.value}
                           </p>
                         </div>
                       </a>
                     </CardContent>
                   </Card>
-                </motion.div>
+                </div>
               ))}
             </div>
-          </motion.div>
+          </div>
 
           {/* Contact Form */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: 50 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="lg:col-span-2 flex items-center justify-center min-h-[500px]"
-          >
-            <motion.div
-              whileHover={{ scale: 1.01 }}
-              transition={{ type: "spring", stiffness: 200 }}
-              className="w-full max-w-xl"
-            >
-              <Card className="bg-white dark:bg-gray-900 shadow-md rounded-xl border-0">
-                <CardContent className="p-8 md:p-10">
+          <div ref={formRef} className="lg:col-span-2 flex items-center justify-center min-h-[400px] sm:min-h-[500px]">
+            <div className="w-full max-w-2xl">
+              <Card className="bg-card border border-border/50 shadow-lg rounded-xl">
+                <CardContent className="p-6 sm:p-8 md:p-10">
                   <form
                     action="https://formspree.io/f/mvgrllvp"
                     method="POST"
-                    className="space-y-6"
+                    className="space-y-4 sm:space-y-6"
+                    onSubmit={handleSubmit}
                   >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                       <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label
+                          htmlFor="name"
+                          className="block text-sm font-medium text-foreground/80 mb-2"
+                        >
                           Full Name
                         </label>
                         <Input
@@ -146,14 +278,16 @@ export default function Contact() {
                           id="name"
                           name="name"
                           required
-                          className="w-full"
+                          className="w-full bg-background border-border/50 text-sm sm:text-base"
                           placeholder="Your full name"
+                          value={formData.name}
+                          onChange={handleChange}
                         />
                       </div>
                       <div>
                         <label
                           htmlFor="email"
-                          className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                          className="block text-sm font-medium text-foreground/80 mb-2"
                         >
                           Email Address
                         </label>
@@ -162,8 +296,10 @@ export default function Contact() {
                           id="email"
                           name="email"
                           required
-                          className="w-full"
+                          className="w-full bg-background border-border/50 text-sm sm:text-base"
                           placeholder="your.email@example.com"
+                          value={formData.email}
+                          onChange={handleChange}
                         />
                       </div>
                     </div>
@@ -171,7 +307,7 @@ export default function Contact() {
                     <div>
                       <label
                         htmlFor="message"
-                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                        className="block text-sm font-medium text-foreground/80 mb-2"
                       >
                         Message
                       </label>
@@ -179,8 +315,10 @@ export default function Contact() {
                         id="message"
                         name="message"
                         required
-                        className="w-full min-h-[120px]"
+                        className="w-full min-h-[120px] sm:min-h-[140px] bg-background border-border/50 text-sm sm:text-base"
                         placeholder="Type your message here..."
+                        value={formData.message}
+                        onChange={handleChange}
                       />
                     </div>
 
@@ -188,16 +326,17 @@ export default function Contact() {
                       <Button
                         type="submit"
                         size="lg"
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg shadow-sm transition-all duration-200 flex items-center gap-2"
+                        className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 sm:px-8 py-4 sm:py-6 text-sm sm:text-base font-semibold shadow-lg hover:shadow-primary/20 transition-all duration-200 flex items-center gap-2 transform hover:scale-[1.02] border-0 w-full sm:w-auto"
+                        data-cursor-hover
                       >
-                        <Send className="h-5 w-5 mr-1" /> Send Message
+                        <Send className="h-4 w-4 sm:h-5 sm:w-5" /> Send Message
                       </Button>
                     </div>
                   </form>
                 </CardContent>
               </Card>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </div>
       </div>
     </section>

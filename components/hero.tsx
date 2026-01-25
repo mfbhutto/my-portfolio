@@ -1,12 +1,201 @@
 "use client"
 
-import { motion } from "framer-motion"
+import { useEffect, useRef } from "react"
+import gsap from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { ArrowDown, Github, Linkedin, Mail } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import Image from "next/image"
 import { Player } from "@lottiefiles/react-lottie-player"
 
+// Register GSAP plugins
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger)
+}
+
+/**
+ * Enhanced Hero Section with GSAP Animations
+ * 
+ * UX Benefits:
+ * - Text stagger creates visual hierarchy and guides attention
+ * - Fade + slide animations feel smooth and professional
+ * - Parallax effect adds depth without being distracting
+ * - Entrance animations create a memorable first impression
+ */
 export default function Hero() {
+  const heroRef = useRef<HTMLElement>(null)
+  const textContainerRef = useRef<HTMLDivElement>(null)
+  const headingRef = useRef<HTMLHeadingElement>(null)
+  const nameRef = useRef<HTMLSpanElement>(null)
+  const subtitleRef = useRef<HTMLDivElement>(null)
+  const descriptionRef = useRef<HTMLParagraphElement>(null)
+  const buttonsRef = useRef<HTMLDivElement>(null)
+  const socialLinksRef = useRef<HTMLDivElement>(null)
+  const imageContainerRef = useRef<HTMLDivElement>(null)
+  const scrollIndicatorRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      // Heading animation with fade + slide
+      if (headingRef.current) {
+        gsap.fromTo(
+          headingRef.current,
+          { opacity: 0, y: 40 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 1,
+            ease: "power3.out",
+            delay: 0.3,
+          }
+        )
+      }
+
+      // Name highlight animation
+      if (nameRef.current) {
+        gsap.fromTo(
+          nameRef.current,
+          { opacity: 0, scale: 0.8, y: 20 },
+          {
+            opacity: 1,
+            scale: 1,
+            y: 0,
+            duration: 0.8,
+            ease: "back.out(1.7)",
+            delay: 0.8,
+          }
+        )
+      }
+
+      // Subtitle typewriter effect
+      if (subtitleRef.current) {
+        const subtitleText = subtitleRef.current.textContent || ""
+        subtitleRef.current.textContent = ""
+        gsap.to(subtitleRef.current, {
+          text: subtitleText,
+          duration: 1.2,
+          ease: "none",
+          delay: 1.2,
+        })
+      }
+
+      // Description fade + slide
+      if (descriptionRef.current) {
+        gsap.fromTo(
+          descriptionRef.current,
+          { opacity: 0, y: 30 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: "power2.out",
+            delay: 1.4,
+          }
+        )
+      }
+
+      // Buttons stagger
+      if (buttonsRef.current) {
+        const buttons = buttonsRef.current.querySelectorAll("button, a")
+        gsap.fromTo(
+          buttons,
+          { opacity: 0, y: 20, scale: 0.9 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.6,
+            stagger: 0.15,
+            ease: "back.out(1.2)",
+            delay: 1.6,
+          }
+        )
+      }
+
+      // Social links fade in
+      if (socialLinksRef.current) {
+        const links = socialLinksRef.current.querySelectorAll("a")
+        gsap.fromTo(
+          links,
+          { opacity: 0, scale: 0 },
+          {
+            opacity: 1,
+            scale: 1,
+            duration: 0.5,
+            stagger: 0.1,
+            ease: "back.out(1.5)",
+            delay: 1.8,
+          }
+        )
+      }
+
+      // Image container parallax and entrance
+      if (imageContainerRef.current) {
+        gsap.fromTo(
+          imageContainerRef.current,
+          { opacity: 0, x: 50, scale: 0.9 },
+          {
+            opacity: 1,
+            x: 0,
+            scale: 1,
+            duration: 1,
+            ease: "power3.out",
+            delay: 0.5,
+          }
+        )
+
+        // Parallax effect on scroll
+        gsap.to(imageContainerRef.current, {
+          y: -50,
+          scrollTrigger: {
+            trigger: heroRef.current,
+            start: "top top",
+            end: "bottom top",
+            scrub: 1,
+          },
+        })
+      }
+
+      // Scroll indicator animation
+      if (scrollIndicatorRef.current) {
+        gsap.fromTo(
+          scrollIndicatorRef.current,
+          { opacity: 0, y: -10 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            delay: 2,
+          }
+        )
+
+        // Continuous bounce animation
+        gsap.to(scrollIndicatorRef.current.querySelector("button"), {
+          y: 10,
+          duration: 1.5,
+          repeat: -1,
+          yoyo: true,
+          ease: "power1.inOut",
+          delay: 2.5,
+        })
+      }
+
+      // Subtle parallax for text container
+      if (textContainerRef.current) {
+        gsap.to(textContainerRef.current, {
+          y: 30,
+          scrollTrigger: {
+            trigger: heroRef.current,
+            start: "top top",
+            end: "bottom top",
+            scrub: 1,
+          },
+        })
+      }
+    }, heroRef)
+
+    return () => ctx.revert()
+  }, [])
+
   const scrollToAbout = () => {
     const element = document.querySelector("#about")
     if (element) {
@@ -15,164 +204,152 @@ export default function Hero() {
   }
 
   return (
-    <section id="home" className="min-h-screen flex items-center justify-center pt-20 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+    <section
+      ref={heroRef}
+      id="home"
+      className="min-h-screen flex items-center justify-center pt-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden"
+    >
+      {/* Subtle gradient background overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none" />
+      
+      <div className="max-w-7xl mx-auto w-full relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Text Content */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center lg:text-left"
-          >
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.8 }}
-              className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-6"
+          <div ref={textContainerRef} className="text-center lg:text-left">
+            <h1
+              ref={headingRef}
+              className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight"
             >
-              Hi, I'm{" "}
-              <motion.span
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5, duration: 0.8 }}
-                className="text-blue-600 dark:text-blue-400"
+              <span className="inline-block text-foreground/90">Hi, I'm</span>{" "}
+              <span
+                ref={nameRef}
+                className="text-primary inline-block bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent"
               >
                 Muhammad Faheem
-              </motion.span>
-            </motion.h1>
+              </span>
+            </h1>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.8 }}
-              className="text-xl sm:text-2xl text-gray-600 dark:text-gray-300 mb-8"
+            <div
+              ref={subtitleRef}
+              className="text-xl sm:text-2xl text-foreground/70 mb-8 font-medium"
             >
-              <motion.span
-                initial={{ width: 0 }}
-                animate={{ width: "100%" }}
-                transition={{ delay: 0.8, duration: 1 }}
-                className="inline-block overflow-hidden whitespace-nowrap border-r-2 border-blue-600"
-              >
-                Full Stack Developer 
-              </motion.span>
-            </motion.div>
+              Full Stack Developer
+            </div>
 
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.6, duration: 0.8 }}
-              className="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-2xl"
+            <p
+              ref={descriptionRef}
+              className="text-base sm:text-lg text-muted-foreground mb-8 sm:mb-10 max-w-2xl leading-relaxed px-4 sm:px-0"
             >
               I create beautiful, responsive web applications using modern technologies. Passionate about clean code,
               user experience, and bringing ideas to life.
-            </motion.p>
+            </p>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8, duration: 0.8 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8"
+            <div
+              ref={buttonsRef}
+              className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start mb-6 sm:mb-8 px-4 sm:px-0"
             >
               <Button
                 size="lg"
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-primary/20 transition-all duration-300 transform hover:scale-[1.02] border-0 w-full sm:w-auto text-sm sm:text-base px-6 sm:px-8 py-5 sm:py-6"
                 onClick={() => {
-                  const el = document.querySelector("#projects");
-                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                  const el = document.querySelector("#projects")
+                  if (el) el.scrollIntoView({ behavior: "smooth" })
                 }}
+                data-cursor-hover
               >
                 View My Work
               </Button>
-              <a href="https://drive.google.com/file/d/1RmDNn8x82ksNrv_3LHbxHATT5an9vdzm/view?usp=drive_link" target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" size="lg">
+              <a
+                href="https://drive.google.com/file/d/1RmDNn8x82ksNrv_3LHbxHATT5an9vdzm/view?usp=drive_link"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-cursor-hover
+                className="w-full sm:w-auto"
+              >
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="border-border/50 bg-card/50 hover:bg-card hover:border-primary/50 shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] w-full sm:w-auto text-sm sm:text-base px-6 sm:px-8 py-5 sm:py-6"
+                >
                   Download CV
                 </Button>
               </a>
-            </motion.div>
+            </div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1, duration: 0.8 }}
+            <div
+              ref={socialLinksRef}
               className="flex gap-4 justify-center lg:justify-start"
             >
-              <a href="https://github.com/mfbhutto" target="_blank" rel="noopener noreferrer">
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <Github className="h-5 w-5" />
+              <a
+                href="https://github.com/mfbhutto"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-cursor-hover
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full hover:bg-secondary/50 transition-all duration-300 transform hover:scale-110 border border-border/50"
+                >
+                  <Github className="h-5 w-5 text-foreground/70 hover:text-primary" />
                 </Button>
               </a>
-              <a href="https://www.linkedin.com/in/muhammad-faheem-5715ab352/" target="_blank" rel="noopener noreferrer">
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <Linkedin className="h-5 w-5" />
+              <a
+                href="https://www.linkedin.com/in/muhammad-faheem-5715ab352/"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-cursor-hover
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full hover:bg-secondary/50 transition-all duration-300 transform hover:scale-110 border border-border/50"
+                >
+                  <Linkedin className="h-5 w-5 text-foreground/70 hover:text-primary" />
                 </Button>
               </a>
-              <a href="mailto:mfbhutto45@gmail.com">
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <Mail className="h-5 w-5" />
+              <a href="mailto:mfbhutto45@gmail.com" data-cursor-hover>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full hover:bg-secondary/50 transition-all duration-300 transform hover:scale-110 border border-border/50"
+                >
+                  <Mail className="h-5 w-5 text-foreground/70 hover:text-primary" />
                 </Button>
               </a>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
-          {/* Profile Image */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex justify-center lg:justify-end"
-          >
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 300 }}
-              className="relative"
-            >
-              <div className="w-80 h-80 rounded-full overflow-hidden border-4 border-blue-600 dark:border-blue-400 shadow-2xl flex items-center justify-center bg-white dark:bg-gray-900">
-                {/* --- Place your animation file in public/animations/hero-animation.json --- */}
-                {/* --- For Lottie JSON animation --- */}
-                {/*
-                <Lottie
-                  animationData={require("@/../public/animations/hero-animation.json")}
-                  loop
-                  autoplay
-                  style={{ width: 320, height: 320 }}
-                />
-                */}
-                {/* --- For LottieFiles Player (alternative) --- */}
+          {/* Profile Image with Parallax */}
+          <div ref={imageContainerRef} className="flex justify-center lg:justify-end">
+            <div className="relative group">
+              <div className="w-64 h-64 sm:w-72 sm:h-72 lg:w-80 lg:h-80 rounded-full overflow-hidden border-4 border-primary/30 shadow-2xl shadow-primary/10 flex items-center justify-center bg-card transition-transform duration-500 group-hover:scale-[1.02] group-hover:border-primary/50">
                 <Player
                   autoplay
                   loop
                   src="/animations/hero-animation.json"
-                  style={{ height: "320px", width: "320px" }}
+                  className="w-full h-full"
                 />
-                {/* --- For SVG or GIF, use: --- */}
-                {/* <img src="/animations/hero-animation.svg" alt="Hero Animation" width={320} height={320} /> */}
               </div>
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
-                className="absolute -inset-4 rounded-full border-2 border-dashed border-blue-600/30 dark:border-blue-400/30"
-              />
-            </motion.div>
-          </motion.div>
+              <div className="absolute -inset-4 rounded-full border-2 border-dashed border-primary/20 animate-spin-slow hidden sm:block" />
+            </div>
+          </div>
         </div>
 
         {/* Scroll Indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5, duration: 0.8 }}
+        <div
+          ref={scrollIndicatorRef}
           className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
         >
-          <motion.button
+          <button
             onClick={scrollToAbout}
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-            className="text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-secondary/50 border border-border/50"
+            aria-label="Scroll to about section"
+            data-cursor-hover
           >
             <ArrowDown className="h-6 w-6" />
-          </motion.button>
-        </motion.div>
+          </button>
+        </div>
       </div>
     </section>
   )
