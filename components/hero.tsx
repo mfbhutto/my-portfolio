@@ -260,7 +260,7 @@ export default function Hero() {
                 View My Work
               </Button>
               <a
-                href="https://drive.google.com/file/d/1RmDNn8x82ksNrv_3LHbxHATT5an9vdzm/view?usp=drive_link"
+                href="https://drive.google.com/file/d/1HXHCor4nK88zGDYZH3wHSc5SJPzgWhQv/view"
                 target="_blank"
                 rel="noopener noreferrer"
                 data-cursor-hover
